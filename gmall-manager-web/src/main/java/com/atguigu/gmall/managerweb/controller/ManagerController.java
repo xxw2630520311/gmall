@@ -11,15 +11,13 @@ import org.csource.fastdfs.TrackerServer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-
-import java.io.File;
 import java.util.List;
 
 @RestController
 @CrossOrigin
 public class ManagerController {
 
+    /** 用@Value读取application.properties中的值 */
     @Value("${fileServer.utl}")
     String FileUrl;
 
@@ -92,6 +90,14 @@ public class ManagerController {
     }
 
 
+    @RequestMapping("spuAll")
+    public List<SpuInfo> spuAll(){
+
+        List<SpuInfo> spuInfoList = managerService.getSpuInfoAll();
+        return spuInfoList;
+    }
+
+
     @RequestMapping(value = "fileUpload",method = RequestMethod.POST)
     public String uploadFdfs(@RequestParam("file") MultipartFile file) throws Exception{
         String imgUrl = FileUrl;
@@ -131,8 +137,31 @@ public class ManagerController {
                 imgUrl += "/" + path;
             }
 
+
         }
 
+
         return imgUrl;
+    }
+
+
+
+    @RequestMapping("baseSaleAttrList")
+    public List<BaseSaleAttr> getBaseAttr(){
+
+        List<BaseSaleAttr> saleAttr = managerService.getSaleAttr();
+
+        return saleAttr;
+
+    }
+
+
+
+    @RequestMapping("saveSpuInfo")
+    public String saveSpuInfo(@RequestBody SpuInfo spuInfo){
+
+        managerService.saveSpuInfo(spuInfo);
+
+        return  "OK";
     }
 }

@@ -66,4 +66,10 @@ public interface ManagerService {
      * @return
      */
     List<SpuInfo> getSpuInfoList(String catalog3Id);
+
+    List<SpuInfo> getSpuInfoAll();
+
+    List<BaseSaleAttr> getSaleAttr();
+
+    void saveSpuInfo(SpuInfo spuInfo);
 }

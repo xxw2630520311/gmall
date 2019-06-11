@@ -4,12 +4,14 @@ import com.alibaba.dubbo.config.annotation.Service;
 import com.atguigu.gmall.bean.*;
 import com.atguigu.gmall.managerservice.mapper.*;
 import com.atguigu.gmall.service.ManagerService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import tk.mybatis.mapper.entity.Example;
 
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class ManagerServiceImpl implements ManagerService {
 
@@ -30,6 +32,19 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Autowired
     private SpuInfoMapper spuInfoMapper;
+
+    @Autowired
+    private BaseSaleAttrMapper baseSaleAttrMapper;
+
+    @Autowired
+    private SpuImageMapper spuImageMapper;
+
+    @Autowired
+    private SpuSaleAttrMapper spuSaleAttrMapper;
+
+    @Autowired
+    private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
+
 
     @Override
     public List<BaseCatalog1> getCataLog1() {
@@ -143,8 +158,81 @@ public class ManagerServiceImpl implements ManagerService {
     public List<SpuInfo> getSpuInfoList(String catalog3Id) {
         SpuInfo spuInfo = new SpuInfo();
         spuInfo.setCatalog3Id(catalog3Id);
-
-
         return spuInfoMapper.select(spuInfo);
+    }
+
+    @Override
+    public List<SpuInfo> getSpuInfoAll() {
+        return spuInfoMapper.selectAll();
+    }
+
+    @Override
+    public List<BaseSaleAttr> getSaleAttr() {
+        List<BaseSaleAttr> baseSaleAttrs = baseSaleAttrMapper.selectAll();
+        return baseSaleAttrs;
+    }
+
+    @Override
+    public void saveSpuInfo(SpuInfo spuInfo) {
+        /** 更新 */
+        if(spuInfo.getId() != null && spuInfo.getId().length() > 0){
+            spuInfoMapper.updateByPrimaryKey(spuInfo);
+        }else{
+            /** 添加 */
+            spuInfo.setId(null);
+            spuInfoMapper.insertSelective(spuInfo);
+        }
+
+        /** 更新图片 */
+
+        /** 删除原来图片 */
+        SpuImage spuImage = new SpuImage();
+        spuImage.setSpuId(spuInfo.getId());
+
+        spuImageMapper.delete(spuImage);
+
+        /** 重新添加图片  */
+
+        List<SpuImage> spuImageList = spuInfo.getSpuImageList();
+        if(spuImageList != null && spuImageList.size() > 0) {
+            for (SpuImage spuImageToadd : spuImageList) {
+                spuImageToadd.setSpuId(spuInfo.getId());
+                spuImageMapper.insert(spuImageToadd);
+            }
+        }
+        /** 删除原有属性 */
+        SpuSaleAttr spuSaleAttrForDelete = new SpuSaleAttr();
+        spuSaleAttrForDelete.setSpuId(spuInfo.getId());
+
+        spuSaleAttrMapper.delete(spuSaleAttrForDelete);
+
+        /** 删除原有属性值 */
+        SpuSaleAttrValue spuSaleAttrValue = new SpuSaleAttrValue();
+        spuSaleAttrValue.setSpuId(spuInfo.getId());
+
+        spuSaleAttrValueMapper.delete(spuSaleAttrValue);
+        /** 更新属性 */
+        List<SpuSaleAttr> spuSaleAttrList = spuInfo.getSpuSaleAttrList();
+        if(spuSaleAttrList != null && spuSaleAttrList.size() > 0) {
+            for (SpuSaleAttr spuSaleAttrForAdd : spuSaleAttrList) {
+                spuSaleAttrForAdd.setId(null);
+                spuSaleAttrForAdd.setSpuId(spuInfo.getId());
+                spuSaleAttrMapper.insertSelective(spuSaleAttrForAdd);
+
+                /** 属性值 */
+                List<SpuSaleAttrValue> spuSaleAttrValueList = spuSaleAttrForAdd.getSpuSaleAttrValueList();
+                if(spuSaleAttrValueList != null && spuSaleAttrValueList.size() > 0){
+                    for (SpuSaleAttrValue spuSaleAttrValueForAdd : spuSaleAttrValueList){
+                        spuSaleAttrValueForAdd.setId(null);
+                        spuSaleAttrValueForAdd.setSpuId(spuInfo.getId());
+                        log.debug(spuSaleAttrForAdd.getId());
+
+                     //   spuSaleAttrValueForAdd.setSaleAttrId(spuSaleAttrForAdd.getId());
+                        spuSaleAttrValueMapper.insertSelective(spuSaleAttrValueForAdd);
+                    }
+                }
+            }
+        }
+
     }
 }
