@@ -20,4 +20,6 @@ public class BaseAttrInfo implements Serializable {
 
     @Transient   // 表示 希望该属性不会在数据表中产生字段，但又可以在程序中使用它。实体类有一个表中没有但可以使用的字段
     private List<BaseAttrValue> attrValueList;
+
+
 }

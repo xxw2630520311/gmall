@@ -30,6 +30,7 @@ public class ManagerServiceImpl implements ManagerService {
     @Autowired
     private BaseAttrValueMapper baseAttrValueMapper;
 
+    /** spu */
     @Autowired
     private SpuInfoMapper spuInfoMapper;
 
@@ -45,7 +46,18 @@ public class ManagerServiceImpl implements ManagerService {
     @Autowired
     private SpuSaleAttrValueMapper spuSaleAttrValueMapper;
 
+    /** sku */
+    @Autowired
+    private SkuInfoMapper skuInfoMapper;
 
+    @Autowired
+    private SkuImageMapper skuImageMapper;
+
+    @Autowired
+    private SkuAttrValueMapper skuAttrValueMapper;
+
+    @Autowired
+    private SkuSaleAttrValueMapper skuSaleAttrValueMapper;
     @Override
     public List<BaseCatalog1> getCataLog1() {
         List<BaseCatalog1> baseCatalog1List = baseCatalog1Mapper.selectAll();
@@ -234,5 +246,73 @@ public class ManagerServiceImpl implements ManagerService {
             }
         }
 
+    }
+
+    @Override
+    public List<SpuImage> spuImageList(String spuId) {
+
+        SpuImage spuImage = new SpuImage();
+        spuImage.setSpuId(spuId);
+       return spuImageMapper.select(spuImage);
+    }
+
+    @Override
+    public List<BaseAttrInfo> attrInfoList(String cataLog3Id) {
+
+        List<BaseAttrInfo> baseAttrInfos = baseAttrInfoMapper.attrInfoList(cataLog3Id);
+        return baseAttrInfos;
+    }
+
+    @Override
+    public List<SpuSaleAttr> selectSpuSaleAttrList(String spuId) {
+
+           return spuSaleAttrMapper.selectSpuSaleAttrList(spuId);
+
+    }
+
+    @Override
+    public void saveSkuInfo(SkuInfo skuInfo) {
+
+        if(skuInfo.getId() != null && skuInfo.getId().length() > 0){
+            skuInfoMapper.updateByPrimaryKey(skuInfo);
+        }else{
+            skuInfo.setId(null);
+            skuInfoMapper.insert(skuInfo);
+        }
+
+        List<SkuImage> skuImageList = skuInfo.getSkuImageList();
+        if(skuImageList != null && skuImageList.size() > 0){
+            for (SkuImage skuImage : skuImageList){
+                if(skuImage.getId() != null && skuImage.getId().length() == 0){
+                    skuImage.setId(null);
+                }
+                skuImage.setSkuId(skuInfo.getId());
+                skuImageMapper.insert(skuImage);
+            }
+        }
+
+        List<SkuAttrValue> skuAttrValueList = skuInfo.getSkuAttrValueList();
+
+        if(skuAttrValueList != null && skuAttrValueList.size() > 0){
+            for (SkuAttrValue skuAttrValue : skuAttrValueList){
+                if(skuAttrValue.getId() != null && skuAttrValue.getId().length() == 0){
+                    skuAttrValue.setId(null);
+                }
+                skuAttrValue.setSkuId(skuInfo.getId());
+                skuAttrValueMapper.insert(skuAttrValue);
+
+                List<SkuSaleAttrValue> skuSaleAttrValueList = skuInfo.getSkuSaleAttrValueList();
+                if (skuSaleAttrValueList!=null && skuSaleAttrValueList.size()>0) {
+                    for (SkuSaleAttrValue saleAttrValue : skuSaleAttrValueList) {
+                        if (saleAttrValue.getId() != null && saleAttrValue.getId().length() == 0) {
+                            saleAttrValue.setId(null);
+                        }
+                        // skuId
+                        saleAttrValue.setSkuId(skuInfo.getId());
+                        skuSaleAttrValueMapper.insertSelective(saleAttrValue);
+                    }
+                }
+            }
+        }
     }
 }

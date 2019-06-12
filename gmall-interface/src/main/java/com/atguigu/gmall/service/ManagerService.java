@@ -68,8 +68,37 @@ public interface ManagerService {
     List<SpuInfo> getSpuInfoList(String catalog3Id);
 
     List<SpuInfo> getSpuInfoAll();
-
+    /**
+     *获取属性
+     */
     List<BaseSaleAttr> getSaleAttr();
 
+    /**
+     * 保存spu
+     * @param spuInfo
+     */
     void saveSpuInfo(SpuInfo spuInfo);
+
+    /**
+     * 添加sku时的图片列表
+     * @param spuId
+     * @return
+     */
+    List<SpuImage> spuImageList(String spuId);
+
+    /**
+     * 获取平台属性
+     * @param cataLog3Id
+     * @return
+     */
+    List<BaseAttrInfo> attrInfoList(String cataLog3Id);
+
+    /**
+     * 获取销售属性
+     * @param spuId
+     * @return
+     */
+    List<SpuSaleAttr> selectSpuSaleAttrList(String spuId);
+
+    void saveSkuInfo(SkuInfo skuInfo);
 }
